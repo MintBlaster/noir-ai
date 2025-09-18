@@ -1,17 +1,8 @@
 from __future__ import annotations
 from datetime import datetime
-from enum import Enum
 from typing import Dict, Any
 from pydantic import BaseModel, Field
-
-
-class TargetType(str, Enum):
-    """Supported investigation target categories."""
-
-    IP = "ip"
-    DOMAIN = "domain"
-    URL = "url"
-    COMPANY = "company"
+from .enums import TargetType
 
 
 class Target(BaseModel):
@@ -33,7 +24,8 @@ class Target(BaseModel):
         description="Cleaned, normalized representation used for lookups (e.g. 'example.com').",
     )
     created_at: datetime = Field(
-        default_factory=datetime.now, description="When this Target object was created."
+        default_factory=datetime.utcnow,
+        description="When this Target object was created.",
     )
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
@@ -45,19 +37,19 @@ class Target(BaseModel):
         use_enum_values = True
         schema_extra = {
             "example": {
-                "value": "https://www.Example.COM/page",
+                "value": "suspicious-deals.com",
                 "type": "domain",
-                "normalized_value": "example.com",
-                "created_at": "2025-01-15T10:30:00Z",
+                "normalized_value": "suspicious-deals.com",
+                "created_at": "2025-01-15T10:00:00Z",
                 "metadata": {
-                    "original_input": "https://www.Example.COM/page",
-                    "extracted_domain": "example.com",
+                    "original_input": "suspicious-deals.com",
+                    "user_agent": "NoirAI/1.0",
                 },
             }
         }
 
     def __str__(self) -> str:
-        return f"<Target {self.type}: {self.normalized_value}>"
+        return f"<Target {self.type.value}: {self.normalized_value}>"
 
     def __repr__(self) -> str:
         return f"Target(value={self.value!r}, type={self.type!r}, normalized_value={self.normalized_value!r})"

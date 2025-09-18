@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
+from .enums import CostTier
 
 
 class Step(BaseModel):
@@ -27,9 +28,9 @@ class Step(BaseModel):
     timeout_s: Optional[int] = Field(
         None, description="Optional per-step timeout in seconds."
     )
-    cost_tier: str = Field(
-        "free",
-        description="Expected acquisition cost tier for this step: free, basic, premium.",
+    cost_tier: CostTier = Field(
+        default=CostTier.FREE,
+        description="Expected acquisition cost tier for this step.",
     )
 
     class Config:
@@ -37,18 +38,18 @@ class Step(BaseModel):
         use_enum_values = True
         schema_extra = {
             "example": {
-                "id": "s1",
+                "id": "step_whois_001",
                 "primitive": "whois",
-                "params": {"domain": "example.com"},
+                "params": {"domain": "suspicious-deals.com"},
                 "parallel": False,
-                "label": "WHOIS lookup",
-                "timeout_s": 10,
+                "label": "WHOIS Domain Lookup",
+                "timeout_s": 30,
                 "cost_tier": "free",
             }
         }
 
     def __str__(self) -> str:
-        return f"<Step {self.id}: {self.primitive} (parallel={self.parallel})>"
+        return f"<Step {self.id}: {self.primitive} ({self.cost_tier.value})>"
 
     def __repr__(self) -> str:
-        return f"Step(id={self.id!r}, primitive={self.primitive!r}, parallel={self.parallel}, cost_tier={self.cost_tier!r})"
+        return f"Step(id={self.id!r}, primitive={self.primitive!r}, cost_tier={self.cost_tier!r})"

@@ -1,7 +1,8 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Dict, List, Any, Annotated
+from typing import Dict, List, Any, Optional, Annotated
 from pydantic import BaseModel, Field
+from .enums import CostTier
 
 
 class Evidence(BaseModel):
@@ -17,13 +18,17 @@ class Evidence(BaseModel):
         ...,
         description="Primitive or tool that produced this evidence (e.g., whois, web_search).",
     )
+    step_id: Optional[str] = Field(
+        None,
+        description="ID of the step that produced this evidence (links to Step.id).",
+    )
     target_value: str = Field(
         ...,
         description="Canonical target value this evidence is about (e.g., example.com).",
     )
     data: Dict[str, Any] = Field(
         default_factory=dict,
-        description="Structured/parsing result extracted from the raw response.",
+        description="Structured/parsed result extracted from the raw response.",
     )
     risk_indicators: List[Dict[str, Any]] = Field(
         default_factory=list,
@@ -33,11 +38,11 @@ class Evidence(BaseModel):
         ..., description="Confidence in this piece of evidence (0.0–1.0)."
     )
     timestamp: datetime = Field(
-        default_factory=datetime.now, description="When the evidence was captured."
+        default_factory=datetime.utcnow, description="When the evidence was captured."
     )
-    cost_tier: str = Field(
-        "free",
-        description="Acquisition cost tier for this evidence: free, basic, premium.",
+    cost_tier: CostTier = Field(
+        default=CostTier.FREE,
+        description="Acquisition cost tier for this evidence.",
     )
     raw_response: str = Field(
         "",
@@ -46,19 +51,30 @@ class Evidence(BaseModel):
 
     class Config:
         from_attributes = True
+        use_enum_values = True
         schema_extra = {
             "example": {
-                "source": "news_search",
-                "target_value": "example.com",
+                "source": "whois",
+                "step_id": "step_whois_001",
+                "target_value": "suspicious-deals.com",
                 "data": {
-                    "title": "Complaint filed against example.com",
-                    "snippet": "User reports X...",
+                    "domain": "suspicious-deals.com",
+                    "creation_date": "2025-01-10T00:00:00Z",
+                    "registrar": "Namecheap Inc.",
+                    "privacy_protected": True,
                 },
-                "risk_indicators": [{"indicator": "complaint", "weight": 0.4}],
-                "confidence": 0.85,
-                "timestamp": "2025-01-15T10:32:00Z",
+                "risk_indicators": [
+                    {
+                        "type": "new_domain",
+                        "severity": "high",
+                        "detail": "Domain registered 5 days ago",
+                        "score_impact": 25,
+                    }
+                ],
+                "confidence": 0.95,
+                "timestamp": "2025-01-15T10:05:30Z",
                 "cost_tier": "free",
-                "raw_response": '{"articles":[{"title":"Complaint..."}]}',
+                "raw_response": "Domain Name: SUSPICIOUS-DEALS.COM\\nCreation Date: 2025-01-10T00:00:00Z...",
             }
         }
 
@@ -66,4 +82,4 @@ class Evidence(BaseModel):
         return f"<Evidence {self.source} for {self.target_value} (confidence={self.confidence:.2f})>"
 
     def __repr__(self) -> str:
-        return f"Evidence(source={self.source!r}, target_value={self.target_value!r}, confidence={self.confidence!r})"
+        return f"Evidence(source={self.source!r}, step_id={self.step_id!r}, confidence={self.confidence!r})"

@@ -1,33 +1,18 @@
 from __future__ import annotations
 from datetime import datetime
-from enum import Enum
-from typing import List, Dict, Any, Optional, Annotated
-
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
-
-from app.core.models.target import Target
-
-
-class InvestigationStatus(str, Enum):
-    """Enumeration of current investigation status."""
-
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-    REJECTED = "rejected"
-    FAILED = "failed"
+from .target import Target
+from .step import Step
+from .evidence import Evidence
+from .enums import InvestigationStatus
 
 
 class Investigation(BaseModel):
     """
     Canonical model for an investigation run.
 
-    Notes
-    - `plan` should represent planner output (list of step ids or human-readable step names).
-      Use the Step model (when available) for stronger typing.
-    - `evidence_collected` stores references (paths/keys/ids) to artifacts; storage backend
-      resolves them to URLs when needed.
+    Orchestrates the execution of a plan (Steps) and collects results (Evidence).
     """
 
     id: str = Field(..., description="Unique identifier for the investigation.")
@@ -35,15 +20,16 @@ class Investigation(BaseModel):
         ..., description="Canonical target object for this investigation."
     )
     status: InvestigationStatus = Field(
-        ..., description="Current lifecycle status of the investigation."
+        default=InvestigationStatus.PENDING,
+        description="Current lifecycle status of the investigation.",
     )
-    plan: List[str] = Field(
+    plan: List[Step] = Field(
         default_factory=list,
-        description="Ordered list of planned step identifiers or labels.",
+        description="Ordered list of steps to execute (from planner).",
     )
-    evidence_collected: List[str] = Field(
+    evidence_collected: List[Evidence] = Field(
         default_factory=list,
-        description="List of artifact references collected during the run.",
+        description="Evidence gathered during execution.",
     )
     started_at: datetime = Field(
         default_factory=datetime.utcnow, description="When the investigation started."
@@ -64,32 +50,45 @@ class Investigation(BaseModel):
         use_enum_values = True
         schema_extra = {
             "example": {
-                "id": "inv_1234567890",
+                "id": "inv_20250115_001",
                 "target": {
-                    "value": "https://www.Example.COM/page",
+                    "value": "suspicious-deals.com",
                     "type": "domain",
-                    "normalized_value": "example.com",
-                    "created_at": "2025-01-15T10:30:00Z",
-                    "metadata": {
-                        "original_input": "https://www.Example.COM/page",
-                        "extracted_domain": "example.com",
-                    },
+                    "normalized_value": "suspicious-deals.com",
+                    "created_at": "2025-01-15T10:00:00Z",
+                    "metadata": {"original_input": "suspicious-deals.com"},
                 },
-                "status": "pending",
-                "plan": ["s1_whois", "s2_web_search"],
-                "evidence_collected": ["artifacts/inv_123/whois.txt"],
-                "started_at": "2025-01-15T10:30:00Z",
-                "completed_at": None,
+                "status": "completed",
+                "plan": [
+                    {
+                        "id": "step_whois_001",
+                        "primitive": "whois",
+                        "params": {"domain": "suspicious-deals.com"},
+                        "label": "WHOIS Domain Lookup",
+                        "cost_tier": "free",
+                    }
+                ],
+                "evidence_collected": [
+                    {
+                        "source": "whois",
+                        "step_id": "step_whois_001",
+                        "target_value": "suspicious-deals.com",
+                        "confidence": 0.95,
+                        "cost_tier": "free",
+                    }
+                ],
+                "started_at": "2025-01-15T10:00:00Z",
+                "completed_at": "2025-01-15T10:08:45Z",
                 "demo_mode": False,
-                "settings": {"max_runtime_s": 120},
+                "settings": {"max_cost_tier": "basic", "timeout_total_s": 300},
             }
         }
 
     def __str__(self) -> str:
-        return f"<Investigation {self.id} status={self.status}>"
+        return f"<Investigation {self.id} status={self.status.value}>"
 
     def __repr__(self) -> str:
         return (
-            f"Investigation(id={self.id!r}, target={self.target!r}, status={self.status!r}, "
-            f"plan={self.plan!r}, evidence_count={len(self.evidence_collected)}, started_at={self.started_at!r})"
+            f"Investigation(id={self.id!r}, target={self.target.normalized_value!r}, "
+            f"status={self.status!r}, evidence_count={len(self.evidence_collected)})"
         )

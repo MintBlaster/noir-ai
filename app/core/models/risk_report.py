@@ -1,21 +1,11 @@
 from __future__ import annotations
 from datetime import datetime
-from enum import Enum
 from typing import List, Dict, Any, Annotated
-
-from pydantic import BaseModel, Field, conint, confloat
-
-
-class RiskReportLevel(str, Enum):
-    """Severity buckets for aggregated risk."""
-
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
+from pydantic import BaseModel, Field
+from .enums import RiskLevel
 
 
-class RiskReportModel(BaseModel):
+class RiskReport(BaseModel):
     """
     Aggregated risk assessment produced by an investigation.
 
@@ -31,7 +21,7 @@ class RiskReportModel(BaseModel):
     score: Annotated[int, Field(ge=0, le=100)] = Field(
         ..., description="Composite risk score, 0 (low) to 100 (high)."
     )
-    level: RiskReportLevel = Field(
+    level: RiskLevel = Field(
         ..., description="Categorical risk level derived from the score."
     )
     confidence: Annotated[float, Field(ge=0.0, le=1.0)] = Field(
@@ -49,7 +39,7 @@ class RiskReportModel(BaseModel):
         description="Concrete next steps for the user (prioritized).",
     )
     generated_at: datetime = Field(
-        default_factory=datetime.now, description="When this report was generated."
+        default_factory=datetime.utcnow, description="When this report was generated."
     )
     investigation_id: str = Field(
         ..., description="ID of the investigation that produced this report."
@@ -64,32 +54,33 @@ class RiskReportModel(BaseModel):
         use_enum_values = True
         schema_extra = {
             "example": {
-                "target_value": "sketchy-site.com",
-                "score": 85,
+                "target_value": "suspicious-deals.com",
+                "score": 75,
                 "level": "high",
-                "confidence": 0.92,
-                "explanation": "High risk: newly registered domain + multiple negative signals.",
+                "confidence": 0.87,
+                "explanation": "High risk domain: newly registered with privacy protection and suspicious naming pattern",
                 "evidence_summary": [
-                    "Domain created 5 days ago",
-                    "Multiple negative forum posts mentioning fraud",
-                    "3 security engines flagged malware",
+                    "Domain registered only 5 days ago",
+                    "WHOIS privacy protection enabled",
+                    "Domain name contains suspicious keywords",
                 ],
                 "recommended_actions": [
-                    "Do not visit this site",
-                    "Block domain in perimeter controls",
-                    "Escalate to security team",
+                    "Exercise extreme caution before visiting",
+                    "Verify legitimacy through alternative channels",
+                    "Consider blocking domain in security tools",
                 ],
-                "generated_at": "2025-01-15T10:35:00Z",
-                "investigation_id": "inv_abc123",
+                "generated_at": "2025-01-15T10:08:45Z",
+                "investigation_id": "inv_20250115_001",
                 "metadata": {
-                    "model": "bedrock:anthropic.claude-2o",
-                    "prompt_hash": "sha256:...",
+                    "scoring_model": "noirai_v1.0",
+                    "evidence_count": 2,
+                    "processing_time_ms": 525,
                 },
             }
         }
 
     def __str__(self) -> str:
-        return f"<RiskReport target={self.target_value} score={self.score} level={self.level}>"
+        return f"<RiskReport target={self.target_value} score={self.score} level={self.level.value}>"
 
     def __repr__(self) -> str:
-        return f"RiskReportModel(target_value={self.target_value!r}, score={self.score}, level={self.level!r})"
+        return f"RiskReport(target_value={self.target_value!r}, score={self.score}, level={self.level!r})"
