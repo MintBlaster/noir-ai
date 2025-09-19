@@ -1,7 +1,7 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .enums import TargetType
 
 
@@ -24,7 +24,7 @@ class Target(BaseModel):
         description="Cleaned, normalized representation used for lookups (e.g. 'example.com').",
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow,
+        default_factory=(lambda: datetime.now(timezone.utc)),
         description="When this Target object was created.",
     )
     metadata: Dict[str, Any] = Field(
@@ -32,10 +32,10 @@ class Target(BaseModel):
         description="Optional additional context (extracted fields, source, notes).",
     )
 
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-        schema_extra = {
+    model_config = ConfigDict(
+        from_attributes = True,
+        use_enum_values = True,
+        json_schema_extra = {
             "example": {
                 "value": "suspicious-deals.com",
                 "type": "domain",
@@ -47,6 +47,7 @@ class Target(BaseModel):
                 },
             }
         }
+    )
 
     def __str__(self) -> str:
         return f"<Target {self.type.value}: {self.normalized_value}>"

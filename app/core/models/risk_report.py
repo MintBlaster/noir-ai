@@ -1,7 +1,7 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Dict, Any, Annotated
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .enums import RiskLevel
 
 
@@ -39,7 +39,7 @@ class RiskReport(BaseModel):
         description="Concrete next steps for the user (prioritized).",
     )
     generated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="When this report was generated."
+        default_factory=(lambda : datetime.now(timezone.utc)), description="When this report was generated."
     )
     investigation_id: str = Field(
         ..., description="ID of the investigation that produced this report."
@@ -49,10 +49,10 @@ class RiskReport(BaseModel):
         description="Optional metadata (model used, prompt hash, version info).",
     )
 
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-        schema_extra = {
+    model_config = ConfigDict(
+        from_attributes = True,
+        use_enum_values = True,
+        json_schema_extra = {
             "example": {
                 "target_value": "suspicious-deals.com",
                 "score": 75,
@@ -72,12 +72,13 @@ class RiskReport(BaseModel):
                 "generated_at": "2025-01-15T10:08:45Z",
                 "investigation_id": "inv_20250115_001",
                 "metadata": {
-                    "scoring_model": "noirai_v1.0",
+                    "scoring_model": "noir_ai_v1.0",
                     "evidence_count": 2,
                     "processing_time_ms": 525,
                 },
             }
         }
+    )
 
     def __str__(self) -> str:
         return f"<RiskReport target={self.target_value} score={self.score} level={self.level.value}>"

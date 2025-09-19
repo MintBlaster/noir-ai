@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .enums import CostTier
 
 
@@ -33,10 +33,10 @@ class Step(BaseModel):
         description="Expected acquisition cost tier for this step.",
     )
 
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-        schema_extra = {
+    model_config = ConfigDict(
+        from_attributes = True,
+        use_enum_values = True,
+        json_schema_extra = {
             "example": {
                 "id": "step_whois_001",
                 "primitive": "whois",
@@ -47,6 +47,7 @@ class Step(BaseModel):
                 "cost_tier": "free",
             }
         }
+    )
 
     def __str__(self) -> str:
         return f"<Step {self.id}: {self.primitive} ({self.cost_tier.value})>"

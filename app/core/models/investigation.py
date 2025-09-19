@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .target import Target
 from .step import Step
 from .evidence import Evidence
@@ -45,10 +45,10 @@ class Investigation(BaseModel):
         description="Optional runtime settings for the investigation (non-sensitive).",
     )
 
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-        schema_extra = {
+    model_config = ConfigDict(
+        from_attributes = True,
+        use_enum_values = True,
+        json_schema_extra = {
             "example": {
                 "id": "inv_20250115_001",
                 "target": {
@@ -83,6 +83,7 @@ class Investigation(BaseModel):
                 "settings": {"max_cost_tier": "basic", "timeout_total_s": 300},
             }
         }
+    )
 
     def __str__(self) -> str:
         return f"<Investigation {self.id} status={self.status.value}>"

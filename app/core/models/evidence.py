@@ -1,7 +1,10 @@
+# backend/app/core/models/evidence.py
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional, Annotated
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel, Field, ConfigDict
+
 from .enums import CostTier
 
 
@@ -38,7 +41,8 @@ class Evidence(BaseModel):
         ..., description="Confidence in this piece of evidence (0.0–1.0)."
     )
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow, description="When the evidence was captured."
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="When the evidence was captured (UTC, timezone-aware).",
     )
     cost_tier: CostTier = Field(
         default=CostTier.FREE,
@@ -49,10 +53,10 @@ class Evidence(BaseModel):
         description="Unprocessed raw output from the source (kept for debugging/audit).",
     )
 
-    class Config:
-        from_attributes = True
-        use_enum_values = True
-        schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        use_enum_values=True,
+        json_schema_extra={
             "example": {
                 "source": "whois",
                 "step_id": "step_whois_001",
@@ -76,7 +80,8 @@ class Evidence(BaseModel):
                 "cost_tier": "free",
                 "raw_response": "Domain Name: SUSPICIOUS-DEALS.COM\\nCreation Date: 2025-01-10T00:00:00Z...",
             }
-        }
+        },
+    )
 
     def __str__(self) -> str:
         return f"<Evidence {self.source} for {self.target_value} (confidence={self.confidence:.2f})>"
