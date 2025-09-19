@@ -1,71 +1,58 @@
-# NoirAI — Autonomous Detective Agent 🕵️‍♀️
+# NoirAI — Automated Risk Analysis System
 
-**An AI-powered investigation system that analyzes companies, domains, and URLs to determine their legitimacy and risk profile.**
-
-NoirAI combines automated data collection, intelligent analysis, and clear reporting to help users make informed decisions about digital entities they encounter online.
+NoirAI is a system for automated investigation and risk analysis of digital entities such as domains, companies, and URLs.
+It integrates structured data collection, configurable analysis, and transparent reporting.
 
 ---
 
 ## What NoirAI Does
 
-NoirAI investigates digital targets through multiple data sources and provides a clear assessment:
-
-- **Automated Evidence Collection** — Gathers WHOIS data, web content, news mentions, and reputation signals
-- **Intelligent Analysis** — Uses AI to synthesize findings and identify risk patterns  
-- **Clear Risk Assessment** — Delivers actionable verdicts: legitimate, suspicious, or scam
-- **Transparent Process** — Shows step-by-step reasoning so users can understand and verify conclusions
-- **Exportable Reports** — Generates comprehensive investigation summaries
+* **Evidence collection** — WHOIS data, web content, news mentions, and reputation checks
+* **Analysis engine** — Heuristics + AI planning to identify risk patterns
+* **Risk assessment** — Scores and labels entities as low, medium, high, or critical risk
+* **Traceable process** — Step-by-step execution visible to the user
+* **Reports** — Exportable investigation summaries
 
 ---
 
-## How It Works
+## Architecture Overview
 
-The system uses a modular architecture designed for reliability and transparency:
-
-**Planner** — Determines investigation strategy based on target type and available data sources
-
-**Orchestrator** — Executes the investigation plan, manages data collection, and handles errors gracefully
-
-**Primitives** — Specialized tools for specific tasks (WHOIS lookup, web scraping, news search, reputation checking)
-
-**Storage** — Secure artifact management with support for local development and cloud deployment
-
-**Frontend** — Clean, investigator-themed interface showing real-time progress and final reports
-
-**Risk Engine** — Analyzes collected evidence using configurable heuristics and AI models
+* **Planner** — determines the investigation strategy
+* **Orchestrator** — runs the plan and manages primitives
+* **Primitives** — self-contained modules (whois, scraper, news search, reputation)
+* **Risk Engine** — aggregates evidence into a score and label
+* **Storage** — local and S3 for evidence and reports
 
 ---
 
-## Key Features
+## Features
 
-- **Real-time Investigation Tracking** — Watch as the agent collects and analyzes evidence
-- **Multi-source Data Collection** — WHOIS records, website analysis, news mentions, domain reputation
-- **Explainable AI Decisions** — Every conclusion is backed by clear evidence and reasoning
-- **Modular Architecture** — Easy to extend with new data sources or analysis methods
-- **Cloud-Ready Deployment** — Built for AWS with Bedrock AI integration
-- **Export-Ready Reports** — Professional investigation summaries for documentation
-
----
-
-## Technology Stack
-
-**Backend:** Python, FastAPI, Pydantic models, AWS Bedrock
-**Frontend:** Next.js, TypeScript, Tailwind CSS
-**Infrastructure:** AWS Lambda, ECS, S3, API Gateway
-**AI:** Amazon Bedrock for dynamic planning and analysis
-**Storage:** S3 for artifacts, local filesystem for development.
+* Real-time trace of system execution
+* Multi-source data collection
+* Explainable scoring (every verdict tied to evidence)
+* Modular primitives (easy to extend)
+* AWS-ready (Bedrock, Lambda, ECS, S3)
+* Exportable reports for documentation
 
 ---
 
-## Project Status
+## Stack
 
-Under active development.  
-Expect breaking changes, unfinished features, and rough edges until closer to the deadline.
+* **Backend**: Python, FastAPI, Pydantic
+* **Frontend**: Next.js, TypeScript, Tailwind
+* **Infra**: AWS Lambda, ECS, S3, API Gateway
+* **AI**: Amazon Bedrock (planning and analysis)
+* **Storage**: S3 (production), local filesystem (development)
+
+---
+
+## Status
+
+Work in progress. Active development. Expect incomplete features and breaking changes.
 
 ---
 
 ## License
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-
-Licensed under the Apache License 2.0. See [LICENSE](LICENSE) for full terms.
+Apache 2.0. See [LICENSE](LICENSE) for terms.
+This project also includes a [NOTICE](NOTICE) file with additional legal and attribution details.
